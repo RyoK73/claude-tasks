@@ -22,8 +22,8 @@ repo=$(gh repo view --json name --jq '.name')
 
 sed -i "s/^CLAUDE_TASKS_OWNER=.*/CLAUDE_TASKS_OWNER=${owner}/" "$ENV_FILE"
 sed -i "s/^CLAUDE_TASKS_REPO=.*/CLAUDE_TASKS_REPO=${repo}/" "$ENV_FILE"
-echo "   CLAUDE_TASKS_OWNER=${owner} / CLAUDE_TASKS_REPO=${repo} を書き込んだのだ"
-echo "   ※ CLAUDE_TASKS_PROJECT_NUMBER は scripts/setup-project.sh 実行後に自動で書き込まれるのだ"
+echo "   CLAUDE_TASKS_OWNER=${owner} / CLAUDE_TASKS_REPO=${repo} を書き込みました"
+echo "   ※ CLAUDE_TASKS_PROJECT_NUMBER は scripts/setup-project.sh 実行後に自動で書き込まれます"
 
 echo "2. ~/.local/bin にsymlinkを作成中..."
 mkdir -p "$BIN_DIR"
@@ -43,16 +43,16 @@ for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
       echo "export CLAUDE_TASKS_HOME=\"${REPO_ROOT}\""
       echo "export PATH=\"\$HOME/.local/bin:\$PATH\""
     } >>"$rc"
-    echo "   ${rc} に追記したのだ。反映には 'source ${rc}' か新しいシェルの起動が必要なのだ"
+    echo "   ${rc} に追記しました。反映には 'source ${rc}' か新しいシェルの起動が必要です"
   fi
 done
 cat <<'EOF'
 
-インストール完了なのだ。次にやること:
+インストール完了です。次にやること:
 
   1. シェルのリロード  (または新しいターミナルを開く)
   2. gh auth refresh -s project  (まだ実行していなければ)
   3. ./scripts/setup-project.sh <owner>  (claude-tasksリポジトリ内で実行)
 
-詳細はREADME.mdを参照するのだ。
+詳細はREADME.mdを参照してください。
 EOF
