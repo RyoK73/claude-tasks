@@ -1,21 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 役割: claude-tasks用GitHub Projectの初回セットアップ（Status用フィールド作成）
+# 役割: claude-tasks用GitHub Projectの初回セットアップ（Project作成・TaskStatusフィールド作成）
 # 使い方: setup-project.sh <owner> [project title]
 #
-# Statusの選択肢を追加・削除・変更したい場合は、下のSTATUS_OPTIONS配列を編集して
-# 再実行すればよい（既存のStatusフィールドはスクリプト内で自動削除してから
-# 作り直すため、手動での削除は不要）。
-STATUS_OPTIONS=(
-  "Discussion"
-  "Plan Review"
-  "In Progress"
-  "Commit Review"
-  "In Fix"
-  "PR Review"
-  "Done"
-)
+# TaskStatusフィールドの作成自体はupdate-status.shに委譲する。
+# TaskStatusの選択肢を追加・削除・変更したい場合は、update-status.sh内の
+# STATUS_OPTIONS配列を編集してupdate-status.shを直接再実行すればよい
+# （Projectを作り直す必要はない）。
 
 owner="${1:?使い方: setup-project.sh <owner> [project title]}"
 title="${2:-claude-tasks}"

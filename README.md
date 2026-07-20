@@ -13,7 +13,7 @@ gh auth refresh -s project  # 初回のみ。gh project系コマンドに read:p
 ./scripts/setup-project.sh <owner>  # Project作成・TaskStatusフィールド作成
 ```
 
-`setup-project.sh` 実行後、出力される案内に従ってGitHub UI上でbuilt-inワークフローを手動設定する（詳細は後述）。
+`setup-project.sh` は内部で `update-status.sh` を呼び出し、TaskStatusフィールドを作成する。実行後、出力される案内に従ってGitHub UI上でbuilt-inワークフローを手動設定する（詳細は後述）。
 
 ## scriptsの役割
 
@@ -26,7 +26,7 @@ gh auth refresh -s project  # 初回のみ。gh project系コマンドに read:p
 | `find-by-branch` | なし               | 現在のブランチ名から対応するissue番号を逆引きする                                                                        |
 | `list-status`    | なし               | 全プロジェクト分のopen issueをTaskStatus付きで一覧表示する                                                               |
 
-`scripts/setup-project.sh` のみPATH登録されない。Project自体を作る初回セットアップ専用のため、claude-tasksリポジトリ内で直接実行する。
+`scripts/setup-project.sh` と `scripts/update-status.sh` はPATH登録されない。前者はProject自体を作る初回セットアップ専用、後者はTaskStatus選択肢を変更したときの保守作業専用のため、どちらもclaude-tasksリポジトリ内で直接実行する。
 
 いずれのscriptsも `lib.sh` のような共通関数ファイルへは切り出さず、単体で完結させている（依存を持たせないことで、1ファイル読むだけで挙動を理解できるようにするため）。`set-status.sh` のみ、ブランチ→issue番号の解決を `find-by-branch.sh` の呼び出しに委譲している。
 
@@ -48,7 +48,7 @@ STATUS_OPTIONS=(
 )
 ```
 
-選択肢を追加・削除・変更したい場合は、この配列を編集して `setup-project.sh` を再実行する（既存のStatusフィールドはスクリプトが自動で削除してから作り直すため、GitHub UI側での手動削除は不要）。
+選択肢を追加・削除・変更したい場合は、この配列を編集して `scripts/update-status.sh` を実行する。Projectは作り直さず、既存のTaskStatusフィールドのみを削除してから作り直す（GitHub UI側での手動削除は不要）。ただし、フィールドを削除するとその時点で各itemに設定されているTaskStatus値も失われる。実行前に確認プロンプトが表示されるので、対象Projectに進行中タスクがある場合は注意すること。
 
 `set-status.sh` や `list-status.sh` はTaskStatusの選択肢名をハードコードしていない。実行のたびに `gh project field-list` でfield-id/option-idを動的に解決するため、GitHub UI上で直接TaskStatusの選択肢を編集した場合でもズレることなく追従する。
 
