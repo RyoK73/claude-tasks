@@ -26,41 +26,28 @@ ENV_FILE="$SCRIPT_DIR/.env"
 echo "Project作成中..."
 project_url=$(gh project create --owner "$owner" --title "$title" --format json --jq '.url')
 project_number=$(basename "$project_url")
-echo "Project #${project_number} を作成したのだ"
-
-echo "Statusフィールド作成中..."
-status_csv=$(IFS=,; echo "${STATUS_OPTIONS[*]}")
-
-# gh project createで新規作成した直後は、GitHubがデフォルトで
-# Todo/In Progress/Doneの3択を持つ"Status"フィールドを自動生成する。
-# field-createは同名フィールドの上書きができないため、既存のものを
-# 一度削除してから独自の選択肢で作り直す。
-default_status_id=$(gh project field-list "$project_number" --owner "$owner" --format json \
-  --jq '.fields[] | select(.name=="Status") | .id')
-if [ -n "$default_status_id" ]; then
-  gh project field-delete --id "$default_status_id" >/dev/null
-fi
-
-gh project field-create "$project_number" --owner "$owner" \
-  --name "Status" \
-  --data-type SINGLE_SELECT \
-  --single-select-options "$status_csv" \
-  >/dev/null
+echo "Project #${project_number} を作成しました。"
 
 if [ -f "$ENV_FILE" ] && grep -q '^CLAUDE_TASKS_PROJECT_NUMBER=' "$ENV_FILE"; then
   sed -i "s/^CLAUDE_TASKS_PROJECT_NUMBER=.*/CLAUDE_TASKS_PROJECT_NUMBER=${project_number}/" "$ENV_FILE"
 else
   echo "CLAUDE_TASKS_PROJECT_NUMBER=${project_number}" >> "$ENV_FILE"
 fi
-echo ".env に CLAUDE_TASKS_PROJECT_NUMBER=${project_number} を書き込んだのだ"
+echo ".env に CLAUDE_TASKS_PROJECT_NUMBER=${project_number} を書き込みました。"
+
+"$SCRIPT_DIR/scripts/update-status.sh"
 
 cat <<'EOF'
 
-残りはGitHub UI上での手動設定が必要なのだ（built-inワークフロー）。
-Projectの画面右上の "..." > Workflows から以下を設定するのだ:
+残りはGitHub UI上での手動設定が必要です（built-inワークフロー）。
+Projectの画面右上の "..." > Workflows から以下を設定してください:
 
-  1. "Item added to project" を有効化し、Set status を "Discussion" に設定
-  2. "Item closed" を有効化し、Set status を "Done" に設定
+  1. "Item added to project" を有効化し、Set value を "TaskStatus: Discussion" に設定
+  2. "Item closed" を有効化し、Set value を "TaskStatus: Done" に設定
 
-詳細はREADME.mdの「built-inワークフローについて」を参照するのだ。
+（built-inワークフローがカスタムフィールドTaskStatusを設定対象に選べるかは
+GitHub UI側で要確認。選べない場合はデフォルトのStatusフィールド向けの
+設定のまま残るので、その場合はREADME.mdの代替手順を参照してください）
+
+詳細はREADME.mdの「built-inワークフローについて」を参照してください。
 EOF
