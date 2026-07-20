@@ -1,0 +1,4 @@
+name: Task
+description: create-task.sh から作成される管理用issue。title/bodyはコマンド側で制御するため、入力フォームは持たない。
+title: ""
+body: []
