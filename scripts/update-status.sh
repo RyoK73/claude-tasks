@@ -15,13 +15,13 @@ set -euo pipefail
 # 注意: フィールドを削除すると、そのフィールドに紐づく全itemの現在の
 # TaskStatus値も失われる（値の自動引き継ぎは行わない）。
 STATUS_OPTIONS=(
-  "Discussion"
-  "Plan Review"
-  "In Progress"
-  "Commit Review"
-  "In Fix"
-  "PR Review"
-  "Done"
+	"Discussion"
+	"Plan Review"
+	"In Progress"
+	"Commit Review"
+	"In Fix"
+	"PR Review"
+	"Done"
 )
 
 SCRIPT_DIR="${CLAUDE_TASKS_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -31,26 +31,29 @@ source "$SCRIPT_DIR/.env"
 echo "TaskStatusフィールドを作り直します。既存の全itemに設定されているTaskStatus値は失われます。"
 read -r -p "続行しますか？ (y/N): " confirm
 if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-  echo "中止しました。"
-  exit 1
+	echo "中止しました。"
+	exit 1
 fi
 
-status_csv=$(IFS=,; echo "${STATUS_OPTIONS[*]}")
+status_csv=$(
+	IFS=,
+	echo "${STATUS_OPTIONS[*]}"
+)
 
 echo "既存のTaskStatusフィールドを確認中..."
 existing_field_id=$(gh project field-list "$CLAUDE_TASKS_PROJECT_NUMBER" --owner "$CLAUDE_TASKS_OWNER" --format json \
-  --jq '.fields[] | select(.name=="TaskStatus") | .id')
+	--jq '.fields[] | select(.name=="TaskStatus") | .id')
 
 if [ -n "$existing_field_id" ]; then
-  echo "既存のTaskStatusフィールドを削除中..."
-  gh project field-delete --id "$existing_field_id" >/dev/null
+	echo "既存のTaskStatusフィールドを削除中..."
+	gh project field-delete --id "$existing_field_id" >/dev/null
 fi
 
 echo "TaskStatusフィールドを作成中..."
 gh project field-create "$CLAUDE_TASKS_PROJECT_NUMBER" --owner "$CLAUDE_TASKS_OWNER" \
-  --name "TaskStatus" \
-  --data-type SINGLE_SELECT \
-  --single-select-options "$status_csv" \
-  >/dev/null
+	--name "TaskStatus" \
+	--data-type SINGLE_SELECT \
+	--single-select-options "$status_csv" \
+	>/dev/null
 
 echo "TaskStatusフィールドを作り直しました。"

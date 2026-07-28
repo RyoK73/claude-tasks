@@ -25,10 +25,10 @@ branch=$(git branch --show-current)
 title="${repo_name}: ${branch}"
 
 issue_number=$(gh issue list --repo "${CLAUDE_TASKS_OWNER}/${CLAUDE_TASKS_REPO}" \
-  --state open \
-  --search "in:title \"${branch}\"" \
-  --json number,title \
-  | jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty')
+	--state open \
+	--search "in:title \"${branch}\"" \
+	--json number,title |
+	jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty')
 
 if [ -z "$issue_number" ]; then
 	echo "ブランチ '${branch}' に対応するissueが見つかりませんでした" >&2
