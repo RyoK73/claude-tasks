@@ -15,15 +15,35 @@ title="${2:-claude-tasks}"
 SCRIPT_DIR="${CLAUDE_TASKS_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 ENV_FILE="$SCRIPT_DIR/.env"
 
-echo "Project作成中..."
-project_url=$(gh project create --owner "$owner" --title "$title" --format json --jq '.url')
-project_number=$(basename "$project_url")
-echo "Project #${project_number} を作成しました。"
+create_project() {
+	local project_url
+	echo "Project作成中..."
+	project_url=$(gh project create --owner "$owner" --title "$title" --format json --jq '.url')
+	project_number=$(basename "$project_url")
+	echo "Project #${project_number} を作成しました。"
+}
+
+echo "Projectの有無を確認します"
+project_list_json=$(gh project list --owner "$owner" --format json)
+existing_number=$(jq -r --arg title "$title" '.projects[] | select(.title == $title) | .number' <<<"$project_list_json")
+
+if [[ -n "$existing_number" ]]; then
+	echo "${title}という名前のProjectが存在します（#${existing_number}）。"
+	echo "現在のリポジトリと連携しますか？ Y/n"
+	read -r answer
+	if [[ "$answer" == "Y" ]]; then
+		project_number="$existing_number"
+	else
+		create_project
+	fi
+else
+	create_project
+fi
 
 if [ -f "$ENV_FILE" ] && grep -q '^CLAUDE_TASKS_PROJECT_NUMBER=' "$ENV_FILE"; then
-  sed -i "s/^CLAUDE_TASKS_PROJECT_NUMBER=.*/CLAUDE_TASKS_PROJECT_NUMBER=${project_number}/" "$ENV_FILE"
+	sed -i "s/^CLAUDE_TASKS_PROJECT_NUMBER=.*/CLAUDE_TASKS_PROJECT_NUMBER=${project_number}/" "$ENV_FILE"
 else
-  echo "CLAUDE_TASKS_PROJECT_NUMBER=${project_number}" >> "$ENV_FILE"
+	echo "CLAUDE_TASKS_PROJECT_NUMBER=${project_number}" >>"$ENV_FILE"
 fi
 echo ".env に CLAUDE_TASKS_PROJECT_NUMBER=${project_number} を書き込みました。"
 
