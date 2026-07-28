@@ -7,6 +7,14 @@ set -euo pipefail
 #   タイトルが "<repo名>: <ブランチ名>" と完全一致するissueを検索する
 #   （ブランチ名のみでの部分一致は、別リポジトリの同名ブランチに誤って
 #   マッチする可能性があるため使わない）
+#
+# 終了コード:
+#   0 = 対応issueが見つかった
+#   2 = 対応issueが見つからなかった（正常系。呼び出し側はここだけを
+#       「issue未作成」として扱ってよい）
+#   それ以外 = gh呼び出し自体の失敗（認証切れ・API障害・.env未設定等）。
+#       set -euo pipefail により自動的にこの終了コードで落ちる。
+#       呼び出し側はこれを「issue未作成」と混同してはならない。
 
 SCRIPT_DIR="${CLAUDE_TASKS_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 # shellcheck source=/dev/null
@@ -23,8 +31,8 @@ issue_number=$(gh issue list --repo "${CLAUDE_TASKS_OWNER}/${CLAUDE_TASKS_REPO}"
   | jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty')
 
 if [ -z "$issue_number" ]; then
-  echo "ブランチ '${branch}' に対応するissueが見つかりませんでした" >&2
-  exit 1
+	echo "ブランチ '${branch}' に対応するissueが見つかりませんでした" >&2
+	exit 2
 fi
 
 echo "$issue_number"
