@@ -50,10 +50,16 @@ if [ -n "$existing_field_id" ]; then
 fi
 
 echo "TaskStatusフィールドを作成中..."
+create_success=true
 gh project field-create "$CLAUDE_TASKS_PROJECT_NUMBER" --owner "$CLAUDE_TASKS_OWNER" \
 	--name "TaskStatus" \
 	--data-type SINGLE_SELECT \
 	--single-select-options "$status_csv" \
-	>/dev/null
+	>/dev/null || create_success=false
+
+if [[ "$create_success" == false ]]; then
+	echo "TaskStatusフィールドの作成に失敗しました。フィールドが削除された状態のままです。update-status.sh を再度実行してください" >&2
+	exit 1
+fi
 
 echo "TaskStatusフィールドを作り直しました。"
