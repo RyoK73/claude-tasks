@@ -17,11 +17,6 @@ README.mdの「各プロジェクトのCLAUDE.mdへの追記テンプレート�
 - 内容：`git branch --show-current`はdetached HEAD時に空文字を返す。その場合issueタイトルが`"repo名: "`になったり、`find-by-branch`の検索が意図しない挙動になる
 - 対応候補：ブランチ名取得が空文字の場合はエラー終了させる
 
-## `create-task`に重複防止がない
-
-- 内容：`create-task.sh`は既存issueの有無を確認せず、呼ぶたびに新規issueを作成する。全プロジェクトの`main`/`master`ブランチで作業するたびに実行されると、同一タイトルのissueが量産される
-- 対応候補：作成前に`find-by-branch.sh`相当のロジックで既存issueをチェックし、あれば既存issue番号を返す
-
 ## GitHub Projectsのitem数上限
 
 - 内容：全プロジェクト・全ブランチをissue化してProjectに載せ続けると、長期的にはProject側のitem数上限に近づくリスクがある
