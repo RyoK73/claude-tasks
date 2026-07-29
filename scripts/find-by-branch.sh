@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 役割: 現在のリポジトリ・ブランチ名から対応する管理用issueを逆引きし、issue番号を返す
-# 使い方: find-by-branch.sh
-#   タイトルが "<repo名>: <ブランチ名>" 形式であることを前提に、
-#   タイトルが "<repo名>: <ブランチ名>" と完全一致するissueを検索する
-#   （ブランチ名のみでの部分一致は、別リポジトリの同名ブランチに誤って
-#   マッチする可能性があるため使わない）
+# Role: reverse-lookup the management issue for the current repository/branch name and return the issue number
+# Usage: find-by-branch.sh
+#   Assumes titles follow the "<repo name>: <branch name>" format, and searches
+#   for an issue whose title exactly matches "<repo name>: <branch name>"
+#   (we don't do a partial match on branch name alone, since that could
+#   incorrectly match a same-named branch in a different repository)
 #
-# 終了コード:
-#   0 = 対応issueが見つかった
-#   2 = 対応issueが見つからなかった（正常系。呼び出し側はここだけを
-#       「issue未作成」として扱ってよい）
-#   それ以外 = gh呼び出し自体の失敗（認証切れ・API障害・.env未設定等）。
-#       set -euo pipefail により自動的にこの終了コードで落ちる。
-#       呼び出し側はこれを「issue未作成」と混同してはならない。
+# Exit codes:
+#   0 = a matching issue was found
+#   2 = no matching issue was found (normal case; callers may treat only this
+#       as "issue not yet created")
+#   anything else = the gh call itself failed (expired auth, API failure, missing
+#       .env, etc.). set -euo pipefail causes the script to exit with this code
+#       automatically. Callers must not confuse this with "issue not yet created".
 
 SCRIPT_DIR="${CLAUDE_TASKS_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 # shellcheck source=/dev/null
@@ -31,7 +31,7 @@ issue_number=$(gh issue list --repo "${CLAUDE_TASKS_OWNER}/${CLAUDE_TASKS_REPO}"
 	jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty')
 
 if [ -z "$issue_number" ]; then
-	echo "ブランチ '${branch}' に対応するissueが見つかりませんでした" >&2
+	echo "No issue found matching branch '${branch}'" >&2
 	exit 2
 fi
 
