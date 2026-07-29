@@ -1,5 +1,7 @@
 # claude-tasks
 
+[English README](./README.md) | [日本語 README](./README_ja.md)
+
 A mechanism for centrally managing development tasks across multiple projects using a TaskStatus field on GitHub Projects. Issues corresponding to branch work in each project are created in this repository, and TaskStatus is transitioned to match Claude Code's workflow.
 
 ## Setup
@@ -19,12 +21,12 @@ gh auth refresh -s project  # first time only. gh project commands need the read
 
 Running `install.sh` registers the following 4 commands (without file extensions) in `~/.local/bin`, so they can be called from any project's working directory.
 
-| Command          | Arguments           | Role                                                                                                                    |
-| ---------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `create-task`    | none                 | Auto-detects the current repo name and branch name, and creates a management issue titled `<repo name>: <branch name>` |
+| Command          | Arguments              | Role                                                                                                                                                      |
+| ---------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create-task`    | none                   | Auto-detects the current repo name and branch name, and creates a management issue titled `<repo name>: <branch name>`                                    |
 | `set-status`     | `"<TaskStatus value>"` | Updates the TaskStatus of the issue corresponding to the current branch. Resolves the issue number automatically using the same logic as `find-by-branch` |
-| `find-by-branch` | none                 | Reverse-looks-up the issue number corresponding to the current branch name                                            |
-| `list-status`    | none                 | Lists all open issues across all projects, along with their TaskStatus                                                |
+| `find-by-branch` | none                   | Reverse-looks-up the issue number corresponding to the current branch name                                                                                |
+| `list-status`    | none                   | Lists all open issues across all projects, along with their TaskStatus                                                                                    |
 
 `scripts/setup-project.sh` and `scripts/update-status.sh` are not registered on PATH. The former is only for the initial setup that creates the Project itself, and the latter is only for maintenance work when changing the TaskStatus options — both are run directly from within the claude-tasks repository.
 

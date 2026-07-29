@@ -1,5 +1,7 @@
 # claude-tasks
 
+[English README](./README.md) | [日本語 README](./README_ja.md)
+
 複数プロジェクトの開発タスクを、GitHub Projects上のTaskStatusで一元管理するための仕組み。各プロジェクトのブランチ作業に対応するissueをこのリポジトリに作成し、Claude Codeの作業フローに合わせてTaskStatusを遷移させていく。
 
 ## セットアップ
