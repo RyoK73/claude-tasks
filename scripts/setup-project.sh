@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 役割: claude-tasks用GitHub Projectの初回セットアップ（Project作成・TaskStatusフィールド作成）
-# 使い方: setup-project.sh <owner> [project title]
+# Role: initial setup for the claude-tasks GitHub Project (create the Project, create the TaskStatus field)
+# Usage: setup-project.sh <owner> [project title]
 #
-# TaskStatusフィールドの作成自体はupdate-status.shに委譲する。
-# TaskStatusの選択肢を追加・削除・変更したい場合は、update-status.sh内の
-# STATUS_OPTIONS配列を編集してupdate-status.shを直接再実行すればよい
-# （Projectを作り直す必要はない）。
+# Creating the TaskStatus field itself is delegated to update-status.sh.
+# To add, remove, or change TaskStatus options, edit the STATUS_OPTIONS array
+# in update-status.sh and re-run it directly (no need to recreate the Project).
 
-owner="${1:?使い方: setup-project.sh <owner> [project title]}"
+owner="${1:?Usage: setup-project.sh <owner> [project title]}"
 title="${2:-claude-tasks}"
 
 SCRIPT_DIR="${CLAUDE_TASKS_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -17,19 +16,19 @@ ENV_FILE="$SCRIPT_DIR/.env"
 
 create_project() {
 	local project_url
-	echo "Project作成中..."
+	echo "Creating Project..."
 	project_url=$(gh project create --owner "$owner" --title "$title" --format json --jq '.url')
 	project_number=$(basename "$project_url")
-	echo "Project #${project_number} を作成しました。"
+	echo "Created Project #${project_number}."
 }
 
-echo "Projectの有無を確認します"
+echo "Checking whether the Project already exists"
 project_list_json=$(gh project list --owner "$owner" --format json)
 existing_number=$(jq -r --arg title "$title" '.projects[] | select(.title == $title) | .number' <<<"$project_list_json")
 
 if [[ -n "$existing_number" ]]; then
-	echo "${title}という名前のProjectが存在します（#${existing_number}）。"
-	echo "現在のリポジトリと連携しますか？ Y/n"
+	echo "A Project named ${title} already exists (#${existing_number})."
+	echo "Link it to the current repository? Y/n"
 	read -r answer
 	if [[ "$answer" == "Y" ]]; then
 		project_number="$existing_number"
@@ -45,21 +44,21 @@ if [ -f "$ENV_FILE" ] && grep -q '^CLAUDE_TASKS_PROJECT_NUMBER=' "$ENV_FILE"; th
 else
 	echo "CLAUDE_TASKS_PROJECT_NUMBER=${project_number}" >>"$ENV_FILE"
 fi
-echo ".env に CLAUDE_TASKS_PROJECT_NUMBER=${project_number} を書き込みました。"
+echo "Wrote CLAUDE_TASKS_PROJECT_NUMBER=${project_number} to .env."
 
 "$SCRIPT_DIR/scripts/update-status.sh"
 
 cat <<'EOF'
 
-残りはGitHub UI上での手動設定が必要です（built-inワークフロー）。
-Projectの画面右上の "..." > Workflows から以下を設定してください:
+The remaining setup requires manual configuration in the GitHub UI (built-in workflows).
+From the "..." menu in the top right of the Project screen, go to Workflows and set up the following:
 
-  1. "Item added to project" を有効化し、Set value を "TaskStatus: Discussion" に設定
-  2. "Item closed" を有効化し、Set value を "TaskStatus: Done" に設定
+  1. Enable "Item added to project" and set its Set value to "TaskStatus: Discussion"
+  2. Enable "Item closed" and set its Set value to "TaskStatus: Done"
 
-（built-inワークフローがカスタムフィールドTaskStatusを設定対象に選べるかは
-GitHub UI側で要確認。選べない場合はデフォルトのStatusフィールド向けの
-設定のまま残るので、その場合はREADME.mdの代替手順を参照してください）
+(Whether the built-in workflow lets you target the custom TaskStatus field needs to be
+verified in the GitHub UI. If it doesn't, the setting will remain targeted at the default
+Status field instead — see README.md for the fallback procedure in that case.)
 
-詳細はREADME.mdの「built-inワークフローについて」を参照してください。
+See the "About built-in workflows" section of README.md for details.
 EOF

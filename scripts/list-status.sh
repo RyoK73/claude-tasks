@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 役割: 全repo分のopen issueをTaskStatus付きで一覧表示する
-# 使い方: list-status.sh
+# Role: list open issues across all repos, along with their TaskStatus
+# Usage: list-status.sh
 
 SCRIPT_DIR="${CLAUDE_TASKS_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 # shellcheck source=/dev/null

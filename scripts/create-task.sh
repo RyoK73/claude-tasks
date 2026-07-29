@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 役割: 現在のリポジトリ・ブランチから管理用issueを作成し、issue番号を返す
-# 使い方: create-task.sh
-#   （実行ディレクトリのrepo名・現在のブランチ名を自動検知する）
+# Role: create a management issue for the current repository/branch and return the issue number
+# Usage: create-task.sh
+#   (auto-detects the repo name and current branch name from the working directory)
 
 SCRIPT_DIR="${CLAUDE_TASKS_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 # shellcheck source=/dev/null
@@ -12,10 +12,10 @@ source "$SCRIPT_DIR/.env"
 repo_name=$(gh repo view --json name --jq '.name')
 branch=$(git branch --show-current)
 
-# タスクが存在しない場合のみタスクを追加。
-# find-by-branchの終了コードで「見つからなかった(2)」と「呼び出し自体の失敗」を
-# 区別する。区別しないと、gh認証切れ等の一時的な障害時にも「issueなし」と
-# 誤判定して重複issueを作成してしまうため。
+# Only add a task if one doesn't already exist.
+# We distinguish find-by-branch's exit codes for "not found (2)" vs. "the call itself
+# failed". Without this distinction, transient failures (e.g. expired gh auth) would
+# be misread as "no issue" and cause a duplicate issue to be created.
 
 find_rc=0
 find-by-branch >/dev/null 2>&1 || find_rc=$?
@@ -27,7 +27,7 @@ case "$find_rc" in
 2)
 	;;
 *)
-	echo "既存issueの確認に失敗しました（終了コード: ${find_rc}）。gh認証状態などを確認してください" >&2
+	echo "Failed to check for an existing issue (exit code: ${find_rc}). Check your gh auth status, etc." >&2
 	exit "$find_rc"
 	;;
 esac
